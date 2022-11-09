@@ -1,35 +1,42 @@
 from machine import Pin
-from ..src.example import Example
+from src.example import Example
+from util.bus import SPI
 
-# ---------------------------------------
-# ------------- SETUP    ----------------
-# ---------------------------------------
+def has_method(o, name):
+    return callable(getattr(o, name, None))
 
-# PORTS CONFIGURATION
-led_internal = Pin(25, Pin.OUT)
-
-# READ_INTERVAL (ms) 
-interval = 1000
-
-# SENSORS MAPPING
-sensors = {
-  # nome do sensor: nome da classe()
-  "example_sensor": Example() # passe como parâmetros os pinos que deverão ser conectados
-}
-
-# ---------------------------------------
-# -------------   LOOP   ----------------
-# ---------------------------------------
+# TODO: fazer o tratamento de erros
+# TODO: suportar um botão de reset e calibração dos sensores
 
 def main():
-  led_internal.value(1)
+    # ---------------------------------------
+    # ------------- SETUP    ----------------
+    # ---------------------------------------
+    led_internal = Pin(25, Pin.OUT)
 
-  while True:
-    read_map = { name: sensor.read() for (name, sensor) in sensors.items() }
-    print(read_map)
+    led_internal.value(1)
 
-    led_internal.toggle() #internal led toggle
-    time.sleep_ms(interval)
+    read_interval_ms = 1000 
+
+    sensors = {
+        # nome do sensor: nome da classe()
+        "example_sensor": Example(SPI(1)) # passe como parâmetro a instância do barramento que está conectado à determinada porta
+    }
+
+    # inicialização de cada sensor (se o método setup existe)
+    for sensor in sensors.values():
+        if has_method(sensor, 'setup'):
+            sensor.setup()
+
+    # ---------------------------------------
+    # -------------   LOOP   ----------------
+    # ---------------------------------------
+    while True:
+        read_map = { name: sensor.read() for (name, sensor) in sensors.items() }
+        print(read_map)
+
+        led_internal.toggle() # internal led toggle
+        time.sleep_ms(read_interval_ms)
 
 if __name__ == "__main__":
-  main()
+    main()

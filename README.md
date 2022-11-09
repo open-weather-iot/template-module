@@ -24,31 +24,75 @@ Após a inicialização do repositório:
 - `gerber_files/`: export de arquivos Gerber
 - `img/`: imagens utilizadas na descrição do README.md
 - `src/`: diretório do código-fonte. Todo código deverá ser colocado aqui, exceto quando é utilizado exclusivamente para testes
-  - `__init__.py`: arquivo vazio para o Python reconhecer um módulo
   - `example.py`: módulo de sensor exemplo
 - `test/`: diretório com os arquivos para execução de testes
   - `main.py`: arquivo principal da rotina de execução de testes. Importa as classes e funções do diretório do código-fonte (`src/`)
+- `util/`: códigos comuns utilizados por vários módulos de sensores ("utilitários").
+  - `bus.py`: utilitário de barramentos SPI, Serial e I2C
 
 Os arquivos `.gitkeep` existem nas pastas vazias para que elas sejam reconhecidas pelo git e incluídas no template. Após popular seu conteúdo, esses arquivos devem ser removidos.
 
 ## Base para uma classe de sensor
-A base para um sensor é uma classe, a qual na inicialização deve receber como parâmetros nomeados as conexões (pinos) e conter um método (função) chamado `read()` que retorna a leitura em determinado momento.
-
-O método `read()` retorna um dicionário com as seguintes chaves:
-- `raw`: contém um dicionário com os valores puros que foram lidos do sensor que se está trabalhando
-- `value`: representa o valor final após conversão de unidades para ser apresentado diretamente ao usuário
-- `unit`: unidade de medida do campo `value`. Exemplo: `'Celsius'`
+A base para um sensor é uma classe, a qual obedece aos seguintes métodos (funções):
+- `__init__(self, *, ...)`: o construtor da classe deve receber os parâmetros nomeados necessários e o barramento utilizado (seja SPI, Serial ou I2C)
+- `setup(self)` (**opcional**): contém as rotinas de inicialização do módulo do sensor, caso necessário
+- `read(self)` (**obrigatório**): retorna um dicionário com as seguintes chaves:
+  - `raw`: contém um dicionário com os valores puros que foram lidos do sensor que se está trabalhando
+  - `value`: representa o valor final após conversão de unidades para ser apresentado diretamente ao usuário
+  - `unit`: unidade de medida do campo `value`. Exemplo: `'Celsius'`
 
 ```py
 class Example:
-    # deve receber como parâmetros os pinos em que o sensor deverá se conectar
-    def __init__(self, *, enable_pin, tx_pin, rx_pin):
+    # deve receber os parâmetros nomeados necessários e o barramento utilizado (seja SPI, Serial ou I2C)
+    def __init__(self, *, i2c_bus):
+        self.i2c_bus = i2c_bus
+        # ...
+
+    # método **OPCIONAL** da classe que realiza a inicialização do sensor
+    def setup(self):
         pass
 
-    # método obrigatório da classe que realiza leituras do sensor
+    # método **OBRIGATÓRIO** da classe que realiza leituras do sensor
     def read(self):
         return { 'raw': {}, 'value': 0.0, 'unit': '' }
+
 ````
+
+## Utilitários
+Alguns utilitários básicos são definidos na pasta `util/`.
+
+### `bus.py`
+Utilitário de barramentos SPI, Serial e I2C.
+
+A classe respectiva para o barramento SPI obedece à seguinte especificação:
+- construtor `SPI(port)`:
+- `select()`: ativa o dispositivo SPI
+- `deselect()`: desativa o dispositivo SPI
+- `read(nbytes, *, auto_select=False)`: lê a quantidade `nbytes` de bytes do dispositivo SPI. Retorna um objeto `bytes` com o dado que foi lido.
+- `write(buf, *, auto_select=False)`: Escreve os bytes contidos em `buf`. Retorna `None`.
+
+#### Exemplo
+```py
+from util.bus import SPI
+
+spi = SPI(port=1)
+
+# (1) ativa o dispositivo SPI, (2) escreve os bytes 12345678, (3) desativa o dispositivo SPI
+spi.select()
+spi.write(b'12345678')
+spi.deselect()
+
+# escreve os bytes 12345678 (automaticamente ativa e desativa o dispositivo para esse comando específico)
+spi.write(b'12345678', auto_select=True)
+
+# lê 5 bytes (automaticamente ativa e desativa)
+reading_5 = spi.read(5, auto_select=True)
+
+with spi: # ativa e desativa o dispositivo SPI automaticamente dentro desse contexto/bloco
+    spi.write(b'12345678')
+    MSB = spi.read(1)
+    LSB = spi.read(1)
+```
 
 ## Orientações gerais
 ### Import

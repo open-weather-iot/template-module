@@ -1,9 +1,13 @@
 class Example:
-    # deve receber como parâmetros os pinos em que o sensor deverá se conectar
+    # deve receber os parâmetros nomeados necessários e o barramento utilizado (seja SPI, Serial ou I2C)
     def __init__(self):
         pass
 
-    # método obrigatório da classe que realiza leituras do sensor
+    # método **OPCIONAL** da classe que realiza a inicialização do sensor
+    def setup(self):
+        pass
+
+    # método **OBRIGATÓRIO** da classe que realiza leituras do sensor
     def read(self):
         # raw: os valores puros que foram lidos do sensor que se está trabalhando
         # value: representa o valor após conversão de unidades para ser apresentado diretamente ao usuário final
