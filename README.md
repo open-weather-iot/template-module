@@ -44,7 +44,7 @@ A base para um sensor é uma classe, a qual obedece aos seguintes métodos (fun�
 ```py
 class Example:
     # deve receber os parâmetros nomeados necessários e o barramento utilizado (seja SPI, Serial ou I2C)
-    def __init__(self, *, i2c_bus):
+    def __init__(self, i2c_bus):
         self.i2c_bus = i2c_bus
         # ...
 
@@ -198,7 +198,7 @@ Tome cuidado para identar o código com **4 espaços**.
 ---
 
 ### Parâmetros nomeados
-Quando uma classe ou função tem objetivo de comunicar com o usuário final, dê preferência a receber e passar parâmetros pelo nome, em vez de pela ordem de passagem de parâmetros.
+Quando uma classe ou função tem objetivo de comunicar com o usuário final, dê preferência a receber e passar parâmetros pelo nome, em vez de pela ordem de passagem de parâmetros, principalmente quando há muitos parâmetros.
 
 Essa recomendação propõe que os nomes dos parâmetros sejam expostos ao usuário da classe ou função, assim, facilitando a leitura dos parâmetros sem a necessidade de abrir o código e analisar a ordem dos parâmetros.
 
@@ -229,6 +229,28 @@ Essa recomendação propõe que os nomes dos parâmetros sejam expostos ao usuá
 > ```
 
 > 💡 Note que basta colocar `*` na posição a partir da qual deseja-se que os parâmetros seguintes sejam passados pelo nome, não por ordem
+
+> 💡 Não é sempre necessário utilizar parâmetros nomeados, por exemplo, quando há poucos parâmetros e os valores são auto-descritivos
+> ```py
+> # src/max31865.py
+> class MAX31865:
+>     def __init__(self, spi_bus):
+>         self.spi_bus = spi_bus
+>
+> # test/main.py
+> from src.max31865 import MAX31865
+> from util.bus import SPI
+>
+> def main():
+>     sensors = {
+>         "t1": MAX31865(SPI(port=1))
+>     }
+>
+>     # ...
+>
+> if __name__ == "__main__":
+>     main()
+> ```
 
 ---
 
