@@ -56,7 +56,7 @@ class Example:
     def read(self):
         return { 'raw': {}, 'value': 0.0, 'unit': '' }
 
-````
+```
 
 ## Utilitários
 Alguns utilitários básicos são definidos na pasta `util/`.
@@ -103,21 +103,86 @@ xyz = XYZ42_SPI(spi=spi._spi, cs=spi._cs)
 
 ## Orientações gerais
 ### Import
-Não importe o módulo inteiro.
-> ❌ 
+Não importe módulos inteiros.
+
+> ❌
 > ```py
 > from example import *
-> ````
+> ```
 
-> ✅ 
+> ✅
 > ```py
 > from example import Example
-> ````
+> ```
+
+---
+
+### Variáveis e instruções globais
+Evite utilizar variáveis e instruções globais para prover uma melhor modularização do código.
+
+> ❌
+> ```py
+> # src/blink_led.py
+> from time import sleep_ms
+> from machine import Pin
+>
+> led_builtin = Pin(25, Pin.OUT)
+> led_builtin.value(1)
+> interval = 1000
+>
+> def blink():
+>     while True:
+>         led_builtin.toggle()
+>         sleep_ms(interval)
+>
+> # test/main.py
+> from src.blink_led import blink
+>
+> blink()
+> ```
+
+> ✅
+> ```py
+> # src/blink_led.py
+> from time import sleep_ms
+> from machine import Pin
+>
+> def blink():
+>     led_builtin = Pin(25, Pin.OUT)
+>     led_builtin.value(1)
+>     interval = 1000
+>
+>     while True:
+>         led_builtin.toggle()
+>         sleep_ms(interval)
+>
+> # test/main.py
+> from src.blink_led import blink
+>
+> if __name__ == "__main__":
+>     blink()
+> ```
+
+> 💡 Note que com essa alteração, agora é possível parametrizar o pino do led e intervalo, deixando o código mais genérico e personalizável.
+> ```py
+> # src/blink_led.py
+> from time import sleep_ms
+> from machine import Pin
+>
+> def blink(*, led_pin=25, interval=1000):
+>     led = Pin(led_pin, Pin.OUT)
+>     led.value(1)
+>
+>     while True:
+>         led.toggle()
+>         sleep_ms(interval)
+> ```
 
 ---
 
 ### Identação
 Tome cuidado para identar o código com **4 espaços**.
+
 > ❌ Exemplo: 3 espaços
 > ```py
 > def test():
@@ -146,7 +211,7 @@ Essa recomendação propõe que os nomes dos parâmetros sejam expostos ao usuá
 >         pass
 >
 > # ...
-> 
+>
 > ex = Example(10, 11, 12, 13, 1)
 > ```
 
@@ -159,7 +224,7 @@ Essa recomendação propõe que os nomes dos parâmetros sejam expostos ao usuá
 >         pass
 >
 > # ...
-> 
+>
 > ex = Example(clk_pin=10, sdi_tx_pin=11, sdo_rx_pin=12, cs_pin=13, spi_id=1)
 > ```
 
