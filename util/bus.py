@@ -1,24 +1,24 @@
 import machine
 from machine import Pin
 
-SPI_SELECT = 0
-SPI_DESELECT = 1
-
+# reference: https://docs.micropython.org/en/latest/library/machine.SPI.html
 class SPI:
     BUS_BAUDRATE = 115200
+    SPI_SELECT = 0
+    SPI_DESELECT = 1
 
     def __init__(self, *, port):
         # values not yet fixed. those will be derived from 'port'
-        spi_id   = 1
-        sck_pin  = 10
-        mosi_pin = 11
-        miso_pin = 12
-        cs_pin   = 13
+        spi_id       = 1
+        sck_pin      = 10
+        mosi_pin     = 11
+        miso_pin     = 12
+        self._cs_pin = 13
 
-        self.CS = Pin(cs_pin, mode=Pin.OUT)
-        self.CS.value(SPI_DESELECT)
+        self._cs = Pin(self._cs_pin, mode=Pin.OUT)
+        self._cs.value(self.SPI_DESELECT)
 
-        self.spi = machine.SPI(
+        self._spi = machine.SPI(
             spi_id, 
             baudrate=self.BUS_BAUDRATE, polarity=0, phase=1, firstbit=machine.SPI.MSB, 
             sck=Pin(sck_pin, Pin.OUT),
@@ -34,20 +34,20 @@ class SPI:
         self.deselect()
 
     def select(self):
-        self.CS.value(SPI_SELECT)
+        self._cs.value(self.SPI_SELECT)
 
     def deselect(self):
-        self.CS.value(SPI_DESELECT)
+        self._cs.value(self.SPI_DESELECT)
 
     def read(self, nbytes, *, auto_select=False):
         if auto_select: self.select()
-        value = self.spi.read(nbytes)
+        value = self._spi.read(nbytes)
         if auto_select: self.deselect()
         return value
 
     def write(self, buf, *, auto_select=False):
         if auto_select: self.select()
-        self.spi.write(buf)
+        self._spi.write(buf)
         if auto_select: self.deselect()
 
 # TODO
@@ -57,6 +57,7 @@ class Serial:
 
 
 # TODO
+# reference: https://docs.micropython.org/en/latest/library/machine.I2C.html
 class I2C:
     def __init__(self, *, bus, addr):
         pass

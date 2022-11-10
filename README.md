@@ -70,10 +70,14 @@ A classe respectiva para o barramento SPI obedece à seguinte especificação:
 - `deselect()`: desativa o dispositivo SPI
 - `read(nbytes, *, auto_select=False)`: lê a quantidade `nbytes` de bytes do dispositivo SPI. Retorna um objeto `bytes` com o dado que foi lido.
 - `write(buf, *, auto_select=False)`: Escreve os bytes contidos em `buf`. Retorna `None`.
+- `_spi`: Atributo utilizado internamente que armazena a instância `machine.SPI`. Não é recomendável utilizar diretamente esse atributo, exceto nos casos de bibliotecas de componentes que recebem uma instância `machine.SPI`.
+- `_cs_pin`: Atributo utilizado internamente que armazena o número do pino de *chip select*. Não é recomendável utilizar diretamente esse atributo, exceto nos casos de bibliotecas de componentes que recebem o número do pino de *chip select*.
+- `_cs`: Atributo utilizado internamente que armazena a instância `machine.Pin` (*output*) do *chip select*. Não é recomendável utilizar diretamente esse atributo, exceto nos casos de bibliotecas de componentes que recebem uma instância `machine.Pin`.
 
 #### Exemplo
 ```py
 from util.bus import SPI
+from xyz42 import XYZ42_SPI
 
 spi = SPI(port=1)
 
@@ -92,6 +96,9 @@ with spi: # ativa e desativa o dispositivo SPI automaticamente dentro desse cont
     spi.write(b'12345678')
     MSB = spi.read(1)
     LSB = spi.read(1)
+
+# expondo para o módulo hipotético XYZ42 a instância interna `machine.SPI` e o `machine.Pin` do chip select
+xyz = XYZ42_SPI(spi=spi._spi, cs=spi._cs)
 ```
 
 ## Orientações gerais
