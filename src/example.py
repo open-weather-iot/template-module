@@ -3,11 +3,15 @@ class Example:
     def __init__(self, spi_bus):
         self.spi_bus = spi_bus
 
-    # método **OPCIONAL** da classe que realiza a inicialização do sensor
+    # método **OPCIONAL** que reseta o estado interno do sensor
+    def reset(self):
+        pass
+
+    # método **OPCIONAL** que inicia o sensor
     def setup(self):
         pass
 
-    # método **OBRIGATÓRIO** da classe que realiza leituras do sensor
+    # método **OBRIGATÓRIO** que realiza leituras do sensor
     def read(self):
         # raw: os valores puros que foram lidos do sensor que se está trabalhando
         # value: representa o valor após conversão de unidades para ser apresentado diretamente ao usuário final
